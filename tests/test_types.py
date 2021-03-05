@@ -1,7 +1,7 @@
-from typedmongo.definitions import Schema, Field
-from typedmongo.types import ObjectId, UUID, Decimal128
-from typing import List
 import pytest
+
+from typedmongo.definitions import Field, Schema
+from typedmongo.types import UUID, Decimal128, ObjectId
 
 
 def test_types():
@@ -10,7 +10,7 @@ def test_types():
         b = Field(UUID)
         c = Field(Decimal128)
         d = Field(int)
-        
+
     obj = MySchema()
     obj.a = "0123456789ab0123456789ab"
     obj.b = "54133de5-ab95-4ce9-bc08-19cc6226724a"

@@ -1,51 +1,59 @@
+from typing import cast, Any, Dict, List, Union
+
 import bson
-from typing import List, Union, Any
-from functools import wraps
-
-
-TRANSFORM_TYPES = {}
-
-
-def register(transform: Union[object, List[object]] = []):
-    if not isinstance(transform, list):
-        transform = [transform]
-
-    def decorator(cls: object):
-        TRANSFORM_TYPES[cls] = transform
-        return cls
-    return decorator
 
 
 class BasicType:
     _value: Any = None
 
-    @ property
+    @property
     def value(self):
         return self._value
 
-@ register(str)
+
+TRANSFORM_TYPES: Dict[BasicType, List[type]] = {}
+
+
+def register(transform: Union[type, List[type]] = []):
+    if not isinstance(transform, list):
+        transform = [transform]
+    transform_typed = cast(List[type], transform)
+
+    def decorator(cls: BasicType):
+        TRANSFORM_TYPES[cls] = transform_typed
+        return cls
+
+    return decorator
+
+
+@register(str)
 class ObjectId(str, BasicType):
     def __init__(self, value):
         try:
             self._value = bson.objectid.ObjectId(value)
-        except:
+        except Exception:
             raise TypeError(f"{value} is not a valid ObjectID")
 
 
-@ register(str)
+@register(str)
 class UUID(str, BasicType):
     def __init__(self, value):
         try:
             self._uuid = bson.uuid.UUID(value)
-        except:
+        except Exception:
             raise TypeError(f"{value} is not a valid UUID")
 
 
-@ register(str)
+@register(str)
 class Decimal128(str, BasicType):
     def __init__(self, value):
         try:
             self._decimal = bson.Decimal128(value)
-        except:
+        except Exception:
             raise TypeError(f"{value} is not a valid Decimal")
 
+
+@register(object)
+class AnyType(BasicType):
+    def __init__(self, value):
+        self._value = value
