@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union
+from typing import Any
 
 from .utils import Validator
 
@@ -15,14 +15,14 @@ class TypeOf(Validator):
         self.value = value
 
     def valid(self, x):
-        if not isinstance(x, self.value): 
+        if not isinstance(x, self.value):
             raise TypeError(f"{{name}} expects {self.value} type, but gives {type(x)}")
 
 
 class Min(Validator):
     def __init__(self, value: int):
         if not isinstance(value, int) and not isinstance(value, datetime.datetime):
-            raise TypeError(f"Min Validator only support int and datetime as argument")
+            raise TypeError("Min Validator only support int and datetime as argument")
         self.value = value
 
     def valid(self, x):
@@ -42,7 +42,7 @@ class Min(Validator):
 class Max(Validator):
     def __init__(self, value: int):
         if not isinstance(value, int) and not isinstance(value, datetime.datetime):
-            raise TypeError(f"Min Validator only support int and datetime as argument")
+            raise TypeError("Max Validator only support int and datetime as argument")
         self.value = value
 
     def valid(self, x):
@@ -56,4 +56,4 @@ class Max(Validator):
             if x > self.value:
                 raise ValueError(f"The datetime of {{name}} can't be later than {self.value}")
         else:
-            raise TypeError("Type of {name} ({type}) is not supported for Min Validator")
+            raise TypeError("Type of {name} ({type}) is not supported for Max Validator")

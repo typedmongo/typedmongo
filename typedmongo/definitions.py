@@ -9,16 +9,18 @@ from typing import (
     Dict,
     Generic,
     List,
+    cast,
     Tuple,
     Type,
     TypeVar,
     overload,
+    Callable
 )
 
 from .exceptions import SchemaDefineError
 from .types import TRANSFORM_TYPES
-from .utils import ImmuSchemaAttribute, OnlyUseAsClass, snake_case
-from .validators import Required, TypeOf
+from .utils import ImmuSchemaAttribute, snake_case
+from .validators.general import Required, TypeOf
 from .validators.utils import Validator
 
 FieldType = TypeVar("FieldType")
@@ -26,6 +28,7 @@ FieldType = TypeVar("FieldType")
 
 class Field(Generic[FieldType]):
     type_: ImmuSchemaAttribute[Type[FieldType]] = ImmuSchemaAttribute()
+    validators: List[Validator]
 
     def __init__(
         self,
@@ -65,22 +68,20 @@ class Field(Generic[FieldType]):
                 return None
             raise AttributeError(f"{instance} has no attribute '{self._name}'") from None
 
-    def __set__(self, instance: object, value: Any) -> None:
+    def __set__(self, instance: object, value: object) -> None:
         # Type Transform
-        if type(value) in TRANSFORM_TYPES.get(self.type_, []):
-            value = self.type_(value)
+        for i in TRANSFORM_TYPES.get(cast(Any, self.type_), []):
+            if isinstance(value, i):
+                value = cast(Callable, self.type_)(value)
 
         # Validator
-        for i in self.validators:
+        for j in self.validators:
             try:
-                i.valid(value)
+                j.valid(value)
             except Exception as e:
-                tmp = []
-                for i in e.args:
-                    tmp.append(i.format(name=f"{instance.__class__.__qualname__}.{self._name}", type=self.type_))
-                e.args = tuple(tmp)
+                e.args = tuple([k.format(name=f"{instance.__class__.__qualname__}.{self._name}", type=self.type_) for k in e.args])
                 raise e
-        
+
         instance.__dict__[self._name] = value
 
     def __delete__(self, instance: object) -> None:
@@ -99,7 +100,7 @@ class Field(Generic[FieldType]):
             self.validators.append(other())
         else:
             return NotImplemented
-        
+
         if isinstance(other, Required):
             self.not_null = True
         return self
@@ -145,8 +146,7 @@ class SchemaMetaClass(type):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         if self.__abstract__:
-            raise NotImplementedError(
-                f"The class {self.__name__} cannot be instantiated")
+            raise NotImplementedError(f"The class {self.__name__} cannot be instantiated")
         instance = super().__call__()
         for name, value in zip(instance.__fields__.keys(), args):
             setattr(instance, name, value)
@@ -156,8 +156,7 @@ class SchemaMetaClass(type):
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "__abstract__":
-            raise AttributeError(
-                "Can't modify the `__abstract__` attribute dynamically.")
+            raise AttributeError("Can't modify the `__abstract__` attribute dynamically.")
         return super().__setattr__(name, value)
 
 
