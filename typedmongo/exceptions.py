@@ -1,4 +1,4 @@
-class TableDefineError(Exception):
+class SchemaDefineError(Exception):
     """
-    Table define error
+    Schema define error
     """
