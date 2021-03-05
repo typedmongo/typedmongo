@@ -7,7 +7,6 @@ TRANSFORM_TYPES = {}
 
 
 def register(transform: Union[object, List[object]] = []):
-    # Original: python 原生类型, 如 str, bool
     if not isinstance(transform, list):
         transform = [transform]
 
