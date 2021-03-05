@@ -6,28 +6,28 @@ from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Generic,
     List,
-    cast,
     Tuple,
     Type,
     TypeVar,
+    cast,
     overload,
-    Callable
 )
 
 from .exceptions import SchemaDefineError
 from .types import TRANSFORM_TYPES
-from .utils import ImmuSchemaAttribute, snake_case
+from .utils import ImmutableAttribute, snake_case
+from .validators.base import Validator
 from .validators.general import Required, TypeOf
-from .validators.utils import Validator
 
 FieldType = TypeVar("FieldType")
 
 
 class Field(Generic[FieldType]):
-    type_: ImmuSchemaAttribute[Type[FieldType]] = ImmuSchemaAttribute()
+    type_: ImmutableAttribute[Type[FieldType]] = ImmutableAttribute()
     validators: List[Validator]
 
     def __init__(
@@ -43,7 +43,7 @@ class Field(Generic[FieldType]):
         self.not_null = not_null
 
     def __set_name__(self, owner: Schema, name: str) -> None:
-        self._Schema = owner
+        self._schema = owner
         self._name = name
 
         if self.field_name == "":
@@ -78,9 +78,15 @@ class Field(Generic[FieldType]):
         for j in self.validators:
             try:
                 j.valid(value)
-            except Exception as e:
-                e.args = tuple([k.format(name=f"{instance.__class__.__qualname__}.{self._name}", type=self.type_) for k in e.args])
-                raise e
+            except Exception as exception:
+                exception.args = tuple(
+                    k.format(
+                        name=f"{instance.__class__.__qualname__}.{self._name}",
+                        type=self.type_,
+                    )
+                    for k in exception.args
+                )
+                raise exception
 
         instance.__dict__[self._name] = value
 
@@ -109,24 +115,30 @@ class Field(Generic[FieldType]):
 class SchemaMetaClass(type):
     if TYPE_CHECKING:
         __abstract__: bool
-        __Schema__: str
+        __schema__: str
         __fields__: Dict[str, Field]
 
     def __new__(cls, name: str, bases: Tuple[type], namespace: Dict[str, Any]) -> Any:
         if "_" in name:  # check error name. e.g. Status_Info
             raise SchemaDefineError(f"Schema class name cannot have '_': {name}")
         if not name[0].isupper():  # check error name. e.g. statusInfo
-            raise SchemaDefineError(f"Schema class name must be upper letter in start: {name}")
+            raise SchemaDefineError(
+                f"Schema class name must be upper letter in start: {name}"
+            )
 
         namespace.setdefault("__abstract__", False)
 
-        namespace.setdefault("__Schema__", snake_case(name))
+        namespace.setdefault("__schema__", snake_case(name))
 
         # merge bases' `__fields__` to `__fields__`
         namespace["__fields__"] = fields = reduce(
             lambda d0, d1: {**d1, **d0},
             reversed([getattr(base, "__fields__", {}) for base in bases]),
-            {name: value for name, value in namespace.items() if isinstance(value, Field)},
+            {
+                name: value
+                for name, value in namespace.items()
+                if isinstance(value, Field)
+            },
         )
 
         # generate `__signature__` for calling `inspect.signature`
@@ -146,7 +158,9 @@ class SchemaMetaClass(type):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         if self.__abstract__:
-            raise NotImplementedError(f"The class {self.__name__} cannot be instantiated")
+            raise NotImplementedError(
+                f"The class {self.__name__} cannot be instantiated"
+            )
         instance = super().__call__()
         for name, value in zip(instance.__fields__.keys(), args):
             setattr(instance, name, value)
@@ -156,7 +170,9 @@ class SchemaMetaClass(type):
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "__abstract__":
-            raise AttributeError("Can't modify the `__abstract__` attribute dynamically.")
+            raise AttributeError(
+                "Can't modify the `__abstract__` attribute dynamically."
+            )
         return super().__setattr__(name, value)
 
 
@@ -164,7 +180,7 @@ class Schema(metaclass=SchemaMetaClass):
     __abstract__: bool = True
 
     if TYPE_CHECKING:
-        __Schema__: str
+        __schema__: str
         __fields__: Dict[str, Field]
 
     def dict(self, *, copy: bool = False) -> Dict[str, Any]:
