@@ -49,3 +49,9 @@ class Decimal128(str, BasicType):
         except:
             raise TypeError(f"{value} is not a valid Decimal")
 
+
+@ register(object)
+class AnyType(BasicType):
+    def __init__(self, value):
+        self._value = value
+

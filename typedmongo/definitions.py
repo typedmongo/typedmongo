@@ -8,18 +8,8 @@ from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, TypeVar, over
 from .exceptions import SchemaDefineError
 from .utils import ImmuSchemaAttribute, OnlyUseAsClass, snake_case
 from .types import TRANSFORM_TYPES
-
-
-class AUTO_INCREMENT(metaclass=OnlyUseAsClass):
-    """
-    Only as a marker
-    """
-
-
-class NOT_NULL(metaclass=OnlyUseAsClass):
-    """
-    Only as a marker
-    """
+from .validators import Required, TypeOf
+from .validators.utils import Validator
 
 
 FieldType = TypeVar("FieldType")
@@ -33,12 +23,11 @@ class Field(Generic[FieldType]):
         type_: Type[FieldType],
         *,
         field_name: str = "",
-        auto_increment: bool = False,
         not_null: bool = False,
     ) -> None:
         self.type_ = type_
         self.field_name = field_name
-        self.auto_increment = auto_increment
+        self.validators = [TypeOf(self.type_)]
         self.not_null = not_null
 
     def __set_name__(self, owner: Schema, name: str) -> None:
@@ -63,19 +52,26 @@ class Field(Generic[FieldType]):
         try:
             return instance.__dict__[self._name]
         except KeyError:
-            # If nullable
             if not self.not_null:
                 return None
             raise AttributeError(f"{instance} has no attribute '{self._name}'") from None
 
     def __set__(self, instance: object, value: Any) -> None:
-        # Type Transform Begin
+        # Type Transform
         if type(value) in TRANSFORM_TYPES.get(self.type_, []):
             value = self.type_(value)
-        # Type Transform End
 
-        if not isinstance(value, self.type_):
-            raise TypeError(f"{instance.__class__.__qualname__}.{self._name} expects {self.type_} type, but gives {type(value)}")
+        # Validator
+        for i in self.validators:
+            try:
+                i.valid(value)
+            except Exception as e:
+                tmp = []
+                for i in e.args:
+                    tmp.append(i.format(name=f"{instance.__class__.__qualname__}.{self._name}", type=self.type_))
+                e.args = tuple(tmp)
+                raise e
+        
         instance.__dict__[self._name] = value
 
     def __delete__(self, instance: object) -> None:
@@ -88,12 +84,15 @@ class Field(Generic[FieldType]):
         """
         implement a @ b
         """
-        if other is AUTO_INCREMENT:
-            self.auto_increment = True
-        elif other is NOT_NULL:
-            self.not_null = True
+        if isinstance(other, Validator):
+            self.validators.append(other)
+        elif issubclass(other, Validator):
+            self.validators.append(other())
         else:
             return NotImplemented
+        
+        if isinstance(other, Required):
+            self.not_null = True
         return self
 
 
