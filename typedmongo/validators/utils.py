@@ -1,5 +1,6 @@
 import abc
-from typing import Optional, Any
+from typing import Any, Optional
+
 
 class Validator(metaclass=abc.ABCMeta):
     @abc.abstractmethod

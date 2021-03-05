@@ -3,14 +3,23 @@ from __future__ import annotations
 import inspect
 from copy import deepcopy
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, TypeVar, overload, List
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    Tuple,
+    Type,
+    TypeVar,
+    overload,
+)
 
 from .exceptions import SchemaDefineError
-from .utils import ImmuSchemaAttribute, OnlyUseAsClass, snake_case
 from .types import TRANSFORM_TYPES
+from .utils import ImmuSchemaAttribute, OnlyUseAsClass, snake_case
 from .validators import Required, TypeOf
 from .validators.utils import Validator
-
 
 FieldType = TypeVar("FieldType")
 

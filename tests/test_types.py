@@ -1,7 +1,9 @@
-from typedmongo.definitions import Schema, Field
-from typedmongo.types import ObjectId, UUID, Decimal128
 from typing import List
+
 import pytest
+
+from typedmongo.definitions import Field, Schema
+from typedmongo.types import UUID, Decimal128, ObjectId
 
 
 def test_types():

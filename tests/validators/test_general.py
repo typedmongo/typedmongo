@@ -1,8 +1,10 @@
-from typedmongo.definitions import Schema, Field
-from typedmongo.validators import Min, Max, Required
-from typing import List
-import pytest
 import datetime
+from typing import List
+
+import pytest
+
+from typedmongo.definitions import Field, Schema
+from typedmongo.validators import Max, Min, Required
 
 
 def test_general():

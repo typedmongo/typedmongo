@@ -1,7 +1,7 @@
-import bson
-from typing import List, Union, Any
 from functools import wraps
+from typing import Any, List, Union
 
+import bson
 
 TRANSFORM_TYPES = {}
 
