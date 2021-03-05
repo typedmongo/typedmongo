@@ -19,8 +19,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-pluggy = "^0.13.1"
+
 bson = "^0.5.10"
+pluggy = "^0.13.1"
 pymongo = "^3.11.3"
 
 [tool.poetry.dev-dependencies]
@@ -31,7 +32,7 @@ isort = "^5.7.0"
 pytest = "^5.4.3"
 
 [tool.black]
-line-length = 200
+line-length = 89
 
 [tool.isort]
 profile = "black"
