@@ -22,15 +22,12 @@ python = "^3.7"
 pluggy = "^0.13.1"
 bson = "^0.5.10"
 pymongo = "^3.11.3"
-mypy = "^0.812"
 
 [tool.poetry.dev-dependencies]
-black = {version = "*", allow-prereleases = true}
-isort = "*"
-
 flake8 = "*"
 mypy = "^0.812"
-
+black = "^20.8b1"
+isort = "^5.7.0"
 pytest = "^5.4.3"
 
 [tool.black]
