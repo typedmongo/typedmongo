@@ -1,20 +1,20 @@
-from typing import cast, Any, Dict, List, Union
+from typing import Any, Dict, Generic, List, TypeVar, Union, cast
 
 import bson
 
+from typedmongo.utils import ImmutableAttribute
 
-class BasicType:
-    _value: Any = None
+RawType = TypeVar("RawType")
 
-    @property
-    def value(self):
-        return self._value
+
+class BasicType(Generic[RawType]):
+    value: ImmutableAttribute[RawType]
 
 
 TRANSFORM_TYPES: Dict[BasicType, List[type]] = {}
 
 
-def register(transform: Union[type, List[type]] = []):
+def register(transform: Union[type, List[type]]):
     if not isinstance(transform, list):
         transform = [transform]
     transform_typed = cast(List[type], transform)
@@ -27,33 +27,33 @@ def register(transform: Union[type, List[type]] = []):
 
 
 @register(str)
-class ObjectId(str, BasicType):
-    def __init__(self, value):
+class ObjectId(str, BasicType[bson.objectid.ObjectId]):
+    def __init__(self, value: str) -> None:
         try:
-            self._value = bson.objectid.ObjectId(value)
+            self.value = bson.objectid.ObjectId(value)
         except Exception:
             raise TypeError(f"{value} is not a valid ObjectID")
 
 
 @register(str)
-class UUID(str, BasicType):
-    def __init__(self, value):
+class UUID(str, BasicType[bson.uuid.UUID]):
+    def __init__(self, value: str) -> None:
         try:
-            self._uuid = bson.uuid.UUID(value)
+            self.value = bson.uuid.UUID(value)
         except Exception:
             raise TypeError(f"{value} is not a valid UUID")
 
 
 @register(str)
-class Decimal128(str, BasicType):
-    def __init__(self, value):
+class Decimal128(str, BasicType[bson.Decimal128]):
+    def __init__(self, value: str) -> None:
         try:
-            self._decimal = bson.Decimal128(value)
+            self.value = bson.Decimal128(value)
         except Exception:
             raise TypeError(f"{value} is not a valid Decimal")
 
 
 @register(object)
 class AnyType(BasicType):
-    def __init__(self, value):
-        self._value = value
+    def __init__(self, value: Any) -> None:
+        self.value = value

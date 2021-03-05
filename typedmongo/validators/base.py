@@ -1,8 +1,8 @@
 import abc
-from typing import Any, Optional
+from typing import Any
 
 
 class Validator(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def valid(self, x: Any) -> Optional[bool]:
+    def valid(self, x: Any) -> None:
         ...
