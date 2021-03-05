@@ -21,7 +21,7 @@ def safe_issubclass(obj: Any, class_or_tuple: Union[type, Tuple[Union[type, Tupl
 T = TypeVar("T")
 
 
-class ImmutableAttribute(Generic[T]):
+class ImmuSchemaAttribute(Generic[T]):
     def __set_name__(self, owner: object, name: str) -> None:
         self.public_name = name
         self.private_name = "_" + name
@@ -31,8 +31,8 @@ class ImmutableAttribute(Generic[T]):
 
     def __set__(self, instance: object, value: T) -> None:
         if hasattr(instance, self.private_name):
-            raise RuntimeError(f"{instance.__class__.__name__}.{self.public_name} is immutable")
+            raise RuntimeError(f"{instance.__class__.__name__}.{self.public_name} is immuSchema")
         setattr(instance, self.private_name, value)
 
     def __delete__(self, instance: object) -> None:
-        raise RuntimeError(f"{instance.__class__.__name__}.{self.public_name} is immutable")
+        raise RuntimeError(f"{instance.__class__.__name__}.{self.public_name} is immuSchema")
