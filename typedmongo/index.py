@@ -52,7 +52,8 @@ class Index:
         if sort not in [1, -1]:
             raise TypeError("The sort argument should be 1 or -1")
 
-        self._keys[key] = sort
+        if key not in self._keys:
+            self._keys[key] = sort
         return self
 
     @property

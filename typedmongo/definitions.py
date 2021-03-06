@@ -105,6 +105,9 @@ class Field(Generic[FieldType]):
             self.validators.append(other)
         elif issubclass(other, Validator):
             self.validators.append(other())
+        elif isinstance(other, Index):
+            other.add_key(self._name)
+            self._schema.__indexes__.append(other)
         else:
             return NotImplemented
 
@@ -180,7 +183,7 @@ class SchemaMetaClass(type):
 class Schema(metaclass=SchemaMetaClass):
     __abstract__: bool = True
     __indexes__: List[Index] = []
-    
+
     if TYPE_CHECKING:
         __schema__: str
         __fields__: Dict[str, Field]

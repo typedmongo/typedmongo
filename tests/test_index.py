@@ -20,8 +20,9 @@ def test_keys():
     TestCase().assertDictEqual(Index(keys={}).keys, {})
     TestCase().assertDictEqual(Index(keys={"hello": 1}).keys, {"hello": 1})
     TestCase().assertDictEqual(Index().add_key("hello", -1).keys, {"hello": -1})
+    # Not override able
     TestCase().assertDictEqual(
-        Index().add_key("hello", -1).add_key("hello", 1).keys, {"hello": 1}
+        Index().add_key("hello", -1).add_key("hello", 1).keys, {"hello": -1}
     )
 
     with pytest.raises(TypeError):

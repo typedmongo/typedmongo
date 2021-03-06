@@ -12,7 +12,7 @@ def snake_case(name: str) -> str:
     )
 
 
-def assert_type(name: str, variable: object, expected_type: object, nullable=True):
+def assert_type(name: str, variable: object, expected_type: type, nullable=True):
     if nullable and variable is None:
         return
     if not isinstance(variable, expected_type):
