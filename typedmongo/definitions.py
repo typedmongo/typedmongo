@@ -179,7 +179,8 @@ class SchemaMetaClass(type):
 
 class Schema(metaclass=SchemaMetaClass):
     __abstract__: bool = True
-
+    __indexes__: List[Index] = []
+    
     if TYPE_CHECKING:
         __schema__: str
         __fields__: Dict[str, Field]
