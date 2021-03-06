@@ -1,4 +1,5 @@
 from typing import Dict
+
 from .utils import assert_type
 
 
@@ -13,17 +14,17 @@ class Index:
         name: str = None,
         keys: Dict[str, int] = None,
     ):
-        assert_type('unique', unique, bool)
-        assert_type('sparse', sparse, bool)
-        assert_type('expire', expire, int)
-        assert_type('name', name, str, True)
-        assert_type('keys', keys, dict, True)
+        assert_type("unique", unique, bool)
+        assert_type("sparse", sparse, bool)
+        assert_type("expire", expire, int)
+        assert_type("name", name, str, True)
+        assert_type("keys", keys, dict, True)
         if keys is not None:
             for k, v in keys.items():
-                assert_type('keys.key', k, str)
-                assert_type('keys.value', v, int)
+                assert_type("keys.key", k, str)
+                assert_type("keys.value", v, int)
                 if v not in [1, -1]:
-                    raise TypeError('The keys.value argument should be 1 or -1')
+                    raise TypeError("The keys.value argument should be 1 or -1")
 
         self.unique = unique
         self.sparse = sparse
@@ -46,14 +47,14 @@ class Index:
         return data
 
     def add_key(self, key, sort=1):
-        assert_type('key', key, str)
-        assert_type('sort', sort, int)
+        assert_type("key", key, str)
+        assert_type("sort", sort, int)
         if sort not in [1, -1]:
-            raise TypeError('The sort argument should be 1 or -1')
+            raise TypeError("The sort argument should be 1 or -1")
 
         self._keys[key] = sort
         return self
-    
+
     @property
     def keys(self):
         return self._keys

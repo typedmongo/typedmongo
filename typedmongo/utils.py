@@ -16,7 +16,7 @@ def assert_type(name: str, variable: object, expected_type: object, nullable=Tru
     if nullable and variable is None:
         return
     if not isinstance(variable, expected_type):
-        raise TypeError(f'The {name} argument should be {expected_type.__name__} type')
+        raise TypeError(f"The {name} argument should be {expected_type.__name__} type")
 
 
 class OnlyUseAsClass(type):
