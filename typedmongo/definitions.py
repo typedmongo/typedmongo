@@ -18,6 +18,7 @@ from typing import (
 )
 
 from .exceptions import SchemaDefineError
+from .index import Index
 from .types import TRANSFORM_TYPES
 from .utils import ImmutableAttribute, snake_case
 from .validators.base import Validator
@@ -104,6 +105,9 @@ class Field(Generic[FieldType]):
             self.validators.append(other)
         elif issubclass(other, Validator):
             self.validators.append(other())
+        elif isinstance(other, Index):
+            other.add_key(self._name)
+            self._schema.__indexes__.append(other)
         else:
             return NotImplemented
 
@@ -178,6 +182,7 @@ class SchemaMetaClass(type):
 
 class Schema(metaclass=SchemaMetaClass):
     __abstract__: bool = True
+    __indexes__: List[Index] = []
 
     if TYPE_CHECKING:
         __schema__: str

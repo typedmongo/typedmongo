@@ -12,6 +12,13 @@ def snake_case(name: str) -> str:
     )
 
 
+def assert_type(name: str, variable: object, expected_type: type, nullable=True):
+    if nullable and variable is None:
+        return
+    if not isinstance(variable, expected_type):
+        raise TypeError(f"The {name} argument should be {expected_type.__name__} type")
+
+
 class OnlyUseAsClass(type):
     def __call__(self, *args, **kwds) -> NoReturn:
         raise NotImplementedError(
