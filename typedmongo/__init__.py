@@ -1,4 +1,4 @@
-from .definitions import Schema
+from .definitions import Field, Schema
 from .index import Index
 
-__all__ = ["Schema", "Index"]
+__all__ = ["Schema", "Field", "Index"]

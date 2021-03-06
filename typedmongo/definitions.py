@@ -42,6 +42,7 @@ class Field(Generic[FieldType]):
         self.field_name = field_name
         self.validators = [TypeOf(self.type_)]
         self.not_null = not_null
+        self.unmounted_indexes: List[Index] = []
 
     def __set_name__(self, owner: Schema, name: str) -> None:
         self._schema = owner
@@ -49,6 +50,10 @@ class Field(Generic[FieldType]):
 
         if self.field_name == "":
             self.field_name = name
+
+        for i in self.unmounted_indexes:
+            i.add_key(self.field_name)
+        owner.__indexes__.extend(self.unmounted_indexes)
 
     @overload
     def __get__(self, instance: None, cls: type = None) -> Field:
@@ -103,11 +108,12 @@ class Field(Generic[FieldType]):
         """
         if isinstance(other, Validator):
             self.validators.append(other)
-        elif issubclass(other, Validator):
-            self.validators.append(other())
         elif isinstance(other, Index):
-            other.add_key(self._name)
-            self._schema.__indexes__.append(other)
+            self.unmounted_indexes.append(other)
+        elif inspect.isclass(other) and (
+            issubclass(other, Validator) or issubclass(other, Index)
+        ):
+            self.validators.append(other())
         else:
             return NotImplemented
 
@@ -191,3 +197,18 @@ class Schema(metaclass=SchemaMetaClass):
     def dict(self, *, copy: bool = False) -> Dict[str, Any]:
         dictionary = {k: v for k, v in self.__dict__.items() if k in self.__fields__}
         return deepcopy(dictionary) if copy else dictionary
+
+    @classmethod
+    def index(cls, *args, index: Index = None, **kwargs):
+        if index is None:
+            index = args[-1]
+            args = args[:-1]
+
+        if not isinstance(index, Index):
+            raise TypeError("index params expects an Index object")
+
+        for i in args:
+            index.add_key(i, 1)
+        for k, v in kwargs.items():
+            index.add_key(k, v)
+        cls.__indexes__.append(index)

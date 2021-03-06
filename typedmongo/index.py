@@ -4,7 +4,7 @@ from .utils import assert_type
 
 
 class Index:
-    _keys: Dict[str, int] = {}
+    _keys: Dict[str, int]
 
     def __init__(
         self,
@@ -30,8 +30,7 @@ class Index:
         self.sparse = sparse
         self.expire = expire
         self.name = name
-        if keys is not None:
-            self._keys = keys
+        self._keys = keys if keys is not None else {}
 
     @property
     def value(self):
