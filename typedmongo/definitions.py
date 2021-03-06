@@ -18,6 +18,7 @@ from typing import (
 )
 
 from .exceptions import SchemaDefineError
+from .index import Index
 from .types import TRANSFORM_TYPES
 from .utils import ImmutableAttribute, snake_case
 from .validators.base import Validator
