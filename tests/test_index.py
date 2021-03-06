@@ -1,7 +1,6 @@
 import pytest
 
-from typedmongo import Field, Index, Schema
-from typedmongo.types import ObjectId
+from typedmongo import Index, Schema
 
 
 def test_json():
